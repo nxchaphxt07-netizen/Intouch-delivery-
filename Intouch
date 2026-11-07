@@ -1,0 +1,1000 @@
+import React, { useState, useMemo } from 'react';
+import { 
+  ShoppingBag, 
+  Search, 
+  Plus, 
+  Minus, 
+  X, 
+  ChevronRight, 
+  CheckCircle2, 
+  Clock, 
+  MapPin, 
+  Phone, 
+  QrCode, 
+  CreditCard, 
+  Send, 
+  Utensils, 
+  Flame, 
+  Sparkles,
+  ArrowLeft,
+  MessageCircle,
+  Copy,
+  Info
+} from 'lucide-react';
+
+// --- MOCK MENU DATA ---
+const MENU_CATEGORIES = [
+  { id: 'recommended', name: 'เมนูแนะนำ', icon: Sparkles },
+  { id: 'mains', name: 'อาหารจานหลัก', icon: Utensils },
+  { id: 'sets', name: 'ชุดเซ็ตสุดคุ้ม', icon: Flame },
+  { id: 'drinks', name: 'เครื่องดื่ม & ของหวาน', icon: ShoppingBag },
+];
+
+const MENU_ITEMS = [
+  {
+    id: 1,
+    categoryId: 'recommended',
+    name: 'ข้าวผัดกะเพราเนื้อโพนยางคำ + ไข่ดาว',
+    price: 129,
+    rating: 4.9,
+    reviews: 128,
+    image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80',
+    description: 'เนื้อโพนยางคำสับผัดกะเพราหอมกรุ่น รสชาติเข้มข้นจัดจ้าน เสิร์ฟพร้อมไข่ดาวกรอบขอบทอง',
+    spicinessOptions: ['เผ็ดน้อย', 'เผ็ดปกติ', 'เผ็ดมาก', 'เผ็ดสะใจ'],
+    toppingOptions: [
+      { id: 'extra_egg', name: 'เพิ่มไข่ดาว', price: 15 },
+      { id: 'extra_rice', name: 'เพิ่มข้าวสวย', price: 15 },
+      { id: 'crispy_pork', name: 'เพิ่มหมูกรอบ', price: 35 }
+    ]
+  },
+  {
+    id: 2,
+    categoryId: 'recommended',
+    name: 'ข้าวมันไก่สูตรสิงคโปร์',
+    price: 95,
+    rating: 4.8,
+    reviews: 95,
+    image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80',
+    description: 'ไก่ต้มเนื้อนุ่มฉ่ำ รสสัมผัสละมุนลิ้น เสิร์ฟพร้อมข้าวมันหอมนุ่มและน้ำจิ้ม 3 แบบ',
+    spicinessOptions: [],
+    toppingOptions: [
+      { id: 'extra_chicken', name: 'เพิ่มเนื้อไก่', price: 40 },
+      { id: 'extra_liver', name: 'เพิ่มเครื่องใน', price: 20 },
+      { id: 'extra_rice_sp', name: 'เพิ่มข้าวมัน', price: 20 }
+    ]
+  },
+  {
+    id: 3,
+    categoryId: 'mains',
+    name: 'ผัดไทยกุ้งสดห่อไข่',
+    price: 139,
+    rating: 4.7,
+    reviews: 84,
+    image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=600&q=80',
+    description: 'ผัดไทยเส้นจันทน์เหนียวนุ่ม ผัดซอสสูตรเข้มข้น กุ้งสดตัวโต ห่อด้วยไข่นุ่มสวยงาม',
+    spicinessOptions: ['ไม่เผ็ด', 'เผ็ดปกติ', 'เผ็ดมาก'],
+    toppingOptions: [
+      { id: 'extra_shrimp', name: 'เพิ่มกุ้งสด (2 ตัว)', price: 45 },
+      { id: 'extra_tofu', name: 'เพิ่มเต้าหู้กุ้งแห้ง', price: 20 }
+    ]
+  },
+  {
+    id: 4,
+    categoryId: 'mains',
+    name: 'ข้าวหน้าหมูกรอบคั่วพริกเกลือ',
+    price: 119,
+    rating: 4.9,
+    reviews: 210,
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80',
+    description: 'หมูกรอบหนังกรอบเนื้อนุ่ม ผัดคั่วกระเทียมพริกสด หอมอร่อยกลมกล่อม',
+    spicinessOptions: ['เผ็ดน้อย', 'เผ็ดปกติ', 'เผ็ดมาก'],
+    toppingOptions: [
+      { id: 'extra_egg_2', name: 'เพิ่มไข่ดาว', price: 15 },
+      { id: 'extra_onsen', name: 'เพิ่มไข่ออนเซ็น', price: 20 }
+    ]
+  },
+  {
+    id: 5,
+    categoryId: 'sets',
+    name: 'เซ็ตอิ่มเดี่ยว: กะเพราหมูสับ + ชาไทย + ไข่ดาว',
+    price: 149,
+    rating: 5.0,
+    reviews: 45,
+    image: 'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=600&q=80',
+    description: 'ชุดคุ้มค่าประหยัด กะเพราหมูสับรสเด็ด พร้อมไข่ดาว และชาไทยเย็นเข้มข้น 1 แก้ว',
+    spicinessOptions: ['เผ็ดน้อย', 'เผ็ดปกติ', 'เผ็ดมาก'],
+    toppingOptions: [
+      { id: 'boba', name: 'เพิ่มไข่มุกในชาไทย', price: 10 }
+    ]
+  },
+  {
+    id: 6,
+    categoryId: 'sets',
+    name: 'เซ็ตคู่หูสุดคุ้ม: ผัดไทย + ข้าวผัดหมู + เกี๊ยวซ่า',
+    price: 269,
+    rating: 4.8,
+    reviews: 62,
+    image: 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=600&q=80',
+    description: 'เหมาะสำหรับ 2 ท่าน อิ่มอร่อยกับผัดไทยกุ้งสด ข้าวผัดหมูโบราณ และเกี๊ยวซ่ากรอบนุ่ม 5 ชิ้น',
+    spicinessOptions: ['เผ็ดน้อย', 'เผ็ดปกติ', 'เผ็ดมาก'],
+    toppingOptions: []
+  },
+  {
+    id: 7,
+    categoryId: 'drinks',
+    name: 'ชาไทยเย็นสูตรเข้มข้น',
+    price: 45,
+    rating: 4.9,
+    reviews: 310,
+    image: 'https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=600&q=80',
+    description: 'ชาไทยคัดสรรใบชาอย่างดี หอมหวานกลมกล่อม ใส่นมสดแท้ 100%',
+    spicinessOptions: [],
+    toppingOptions: [
+      { id: 'sweet_100', name: 'หวานปกติ 100%', price: 0 },
+      { id: 'sweet_50', name: 'หวานน้อย 50%', price: 0 },
+      { id: 'sweet_0', name: 'ไม่หวานเลย 0%', price: 0 }
+    ]
+  },
+  {
+    id: 8,
+    categoryId: 'drinks',
+    name: 'ข้าวเหนียวมะม่วงน้ำดอกไม้',
+    price: 89,
+    rating: 4.9,
+    reviews: 140,
+    image: 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=600&q=80',
+    description: 'มะม่วงน้ำดอกไม้สุกหวานฉ่ำ เสิร์ฟพร้อมข้าวเหนียวมูนกะทิหอมมัน และราดกะทิสด',
+    spicinessOptions: [],
+    toppingOptions: [
+      { id: 'extra_coconut', name: 'เพิ่มน้ำกะทิ', price: 10 }
+    ]
+  }
+];
+
+export default function App() {
+  // --- STATES ---
+  const [selectedCategory, setSelectedCategory] = useState('recommended');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [cart, setCart] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [activeModalItem, setActiveModalItem] = useState(null);
+  const [orderType, setOrderType] = useState('delivery'); // 'delivery' | 'takeaway'
+  const [customerInfo, setCustomerInfo] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    note: ''
+  });
+  const [paymentMethod, setPaymentMethod] = useState('promptpay'); // 'promptpay' | 'cod'
+  const [paymentSlip, setPaymentSlip] = useState(null);
+  const [confirmedOrder, setConfirmedOrder] = useState(null);
+
+  // --- ITEM CUSTOMIZATION MODAL STATE ---
+  const [modalQuantity, setModalQuantity] = useState(1);
+  const [selectedSpiciness, setSelectedSpiciness] = useState('');
+  const [selectedToppings, setSelectedToppings] = useState([]);
+  const [itemNote, setItemNote] = useState('');
+
+  // --- FILTERED MENU ---
+  const filteredMenu = useMemo(() => {
+    return MENU_ITEMS.filter(item => {
+      const matchesCategory = selectedCategory === 'all' || item.categoryId === selectedCategory;
+      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [selectedCategory, searchQuery]);
+
+  // --- CART CALCULATIONS ---
+  const subtotal = useMemo(() => {
+    return cart.reduce((sum, item) => sum + (item.totalUnitPrice * item.quantity), 0);
+  }, [cart]);
+
+  const deliveryFee = orderType === 'delivery' ? (subtotal > 0 ? 30 : 0) : 0;
+  const grandTotal = subtotal + deliveryFee;
+
+  // --- HANDLERS ---
+  const openCustomizationModal = (item) => {
+    setActiveModalItem(item);
+    setModalQuantity(1);
+    setSelectedSpiciness(item.spicinessOptions.length > 0 ? item.spicinessOptions[1] || item.spicinessOptions[0] : '');
+    setSelectedToppings([]);
+    setItemNote('');
+  };
+
+  const handleToppingToggle = (topping) => {
+    if (selectedToppings.some(t => t.id === topping.id)) {
+      setSelectedToppings(selectedToppings.filter(t => t.id !== topping.id));
+    } else {
+      setSelectedToppings([...selectedToppings, topping]);
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (!activeModalItem) return;
+
+    const toppingExtraCost = selectedToppings.reduce((sum, t) => sum + t.price, 0);
+    const totalUnitPrice = activeModalItem.price + toppingExtraCost;
+
+    const cartItem = {
+      cartItemId: Date.now() + Math.random().toString(),
+      id: activeModalItem.id,
+      name: activeModalItem.name,
+      basePrice: activeModalItem.price,
+      totalUnitPrice: totalUnitPrice,
+      spiciness: selectedSpiciness,
+      toppings: selectedToppings,
+      note: itemNote,
+      quantity: modalQuantity,
+      image: activeModalItem.image
+    };
+
+    setCart(prev => [...prev, cartItem]);
+    setActiveModalItem(null);
+    setIsCartOpen(true);
+  };
+
+  const updateCartQuantity = (cartItemId, delta) => {
+    setCart(prev => prev.map(item => {
+      if (item.cartItemId === cartItemId) {
+        const newQty = item.quantity + delta;
+        return newQty > 0 ? { ...item, quantity: newQty } : null;
+      }
+      return item;
+    }).filter(Boolean));
+  };
+
+  const handleSlipUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPaymentSlip(URL.createObjectURL(file));
+    }
+  };
+
+  const generateLineMessage = (order) => {
+    let msg = `🍣 *สั่งซื้อออเดอร์ใหม่ #${order.id}*\n`;
+    msg += `--------------------------------\n`;
+    msg += `👤 *ลูกค้า:* ${order.customer.name}\n`;
+    msg += `📞 *เบอร์โทร:* ${order.customer.phone}\n`;
+    msg += `📍 *รูปแบบ:* ${order.type === 'delivery' ? 'จัดส่งถึงบ้าน' : 'รับที่ร้าน (Takeaway)'}\n`;
+    if (order.type === 'delivery') {
+      msg += `🏠 *ที่อยู่:* ${order.customer.address}\n`;
+    }
+    msg += `--------------------------------\n`;
+    msg += `📋 *รายการอาหาร:*\n`;
+    order.items.forEach((item, index) => {
+      msg += `${index + 1}. ${item.name} x${item.quantity} = ฿${item.totalUnitPrice * item.quantity}\n`;
+      if (item.spiciness) msg += `   - ความเผ็ด: ${item.spiciness}\n`;
+      if (item.toppings.length > 0) msg += `   - ท็อปปิ้ง: ${item.toppings.map(t => t.name).join(', ')}\n`;
+      if (item.note) msg += `   - โน้ต: ${item.note}\n`;
+    });
+    msg += `--------------------------------\n`;
+    msg += `💵 *ค่าอาหาร:* ฿${order.subtotal}\n`;
+    msg += `🛵 *ค่าจัดส่ง:* ฿${order.deliveryFee}\n`;
+    msg += `💰 *ราคารวมสุทธิ:* ฿${order.grandTotal}\n`;
+    msg += `💳 *การชำระเงิน:* ${order.paymentMethod === 'promptpay' ? 'โอนผ่านสแกน QR Code (แนบสลิป)' : 'เก็บเงินปลายทาง (COD)'}\n`;
+    if (order.customer.note) {
+      msg += `📝 *หมายเหตุเพิ่มเติม:* ${order.customer.note}\n`;
+    }
+    return msg;
+  };
+
+  const handlePlaceOrder = () => {
+    if (!customerInfo.name || !customerInfo.phone) {
+      alert('กรุณากรอกชื่อและเบอร์โทรศัพท์สำหรับติดต่อ');
+      return;
+    }
+    if (orderType === 'delivery' && !customerInfo.address) {
+      alert('กรุณากรอกที่อยู่สำหรับจัดส่ง');
+      return;
+    }
+
+    const orderData = {
+      id: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
+      createdAt: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+      items: [...cart],
+      subtotal,
+      deliveryFee,
+      grandTotal,
+      type: orderType,
+      customer: customerInfo,
+      paymentMethod,
+      paymentSlip,
+      status: 'รอร้านค้ารับออเดอร์'
+    };
+
+    setConfirmedOrder(orderData);
+    setCart([]);
+    setIsCartOpen(false);
+  };
+
+  const sendToLineOA = () => {
+    if (!confirmedOrder) return;
+    const text = encodeURIComponent(generateLineMessage(confirmedOrder));
+    // Simulated LINE OA link redirect (Users can adjust their LINE OA URL)
+    window.open(`https://line.me/R/oaMessage/@delicious_food/?${text}`, '_blank');
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-24 md:pb-8">
+      
+      {/* HEADER BAR */}
+      <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          
+          {/* Brand Logo & Name */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-orange-500/20 font-bold text-xl">
+              😋
+            </div>
+            <div>
+              <h1 className="font-extrabold text-slate-900 text-lg leading-tight flex items-center gap-2">
+                ครัวคุณติ๊ก เดลิเวอรี่
+                <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full border border-emerald-200">
+                  เปิดอยู่
+                </span>
+              </h1>
+              <p className="text-xs text-slate-500 flex items-center gap-1">
+                <Clock size={12} className="text-orange-500" /> จัดส่ง 25-35 นาที • สั่งง่ายผ่านเว็บ
+              </p>
+            </div>
+          </div>
+
+          {/* Cart Icon (Desktop View) */}
+          <button 
+            onClick={() => setIsCartOpen(true)}
+            className="relative hidden md:flex items-center gap-2 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-medium px-4 py-2 rounded-xl transition-all shadow-md shadow-orange-500/20"
+          >
+            <ShoppingBag size={18} />
+            <span>ตะกร้าของฉัน</span>
+            {cart.length > 0 && (
+              <span className="bg-white text-orange-600 font-bold text-xs w-5 h-5 rounded-full flex items-center justify-center shadow-inner ml-1">
+                {cart.reduce((a, b) => a + b.quantity, 0)}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* SEARCH BAR & QUICK FILTERS */}
+        <div className="max-w-5xl mx-auto px-4 pb-3">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="ค้นหาชื่อเมนู เช่น กะเพรา, ผัดไทย, ชาไทย..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-100 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* CATEGORY BAR */}
+      <nav className="sticky top-[113px] z-20 bg-white/95 backdrop-blur-md border-b border-slate-200 py-2.5 px-4 shadow-xs">
+        <div className="max-w-5xl mx-auto flex gap-2 overflow-x-auto no-scrollbar scroll-smooth">
+          {MENU_CATEGORIES.map(cat => {
+            const Icon = cat.icon;
+            const isActive = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all shrink-0 ${
+                  isActive 
+                    ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20' 
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
+                }`}
+              >
+                <Icon size={16} />
+                {cat.name}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* MAIN CONTAINER */}
+      <main className="max-w-5xl mx-auto px-4 py-6">
+        
+        {/* PROMOTION BANNER */}
+        <div className="mb-6 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 p-4 sm:p-6 text-white shadow-lg shadow-orange-500/15 relative overflow-hidden flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="relative z-10">
+            <span className="bg-white/20 text-white text-xs font-semibold px-2.5 py-1 rounded-md backdrop-blur-sm">
+              โปรโมชั่นเปิดตัวเว็บสั่งอาหาร 🚀
+            </span>
+            <h2 className="text-xl sm:text-2xl font-black mt-2">สั่งผ่านเว็บวันนี้ ค่าส่งเพียง 30 บาท!</h2>
+            <p className="text-orange-100 text-xs sm:text-sm mt-1">ไม่ต้องรอแอดมินตอบไลน์ เลือกเมนู ปรับแต่งตามใจ แล้วส่งออเดอร์ได้ทันที</p>
+          </div>
+          <div className="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/20 text-center w-full sm:w-auto shrink-0">
+            <span className="text-xs text-orange-100 block">รองรับการชำระเงิน</span>
+            <div className="font-bold text-sm text-white flex items-center justify-center gap-2 mt-0.5">
+              <span>พร้อมเพย์ QR</span> • <span>ปลายทาง</span>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION TITLE */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+            {MENU_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'รายการอาหาร'}
+            <span className="text-xs font-normal text-slate-500">({filteredMenu.length} รายการ)</span>
+          </h2>
+        </div>
+
+        {/* MENU GRID */}
+        {filteredMenu.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredMenu.map(item => (
+              <div 
+                key={item.id}
+                className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+                    <img 
+                      src={item.image} 
+                      alt={item.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                      ⭐ {item.rating} ({item.reviews})
+                    </div>
+                  </div>
+
+                  <div className="p-4">
+                    <h3 className="font-bold text-slate-900 text-base leading-snug group-hover:text-orange-600 transition-colors">
+                      {item.name}
+                    </h3>
+                    <p className="text-slate-500 text-xs mt-1 line-clamp-2 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="px-4 pb-4 pt-0 flex items-center justify-between mt-auto">
+                  <div>
+                    <span className="text-xs text-slate-400 block">ราคา</span>
+                    <span className="font-extrabold text-lg text-orange-600">฿{item.price}</span>
+                  </div>
+                  <button 
+                    onClick={() => openCustomizationModal(item)}
+                    className="bg-orange-50 hover:bg-orange-500 text-orange-600 hover:text-white border border-orange-200 hover:border-orange-500 px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs active:scale-95"
+                  >
+                    <Plus size={16} />
+                    <span>เลือกตัวเลือก</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center my-8">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400 mb-3">
+              <Search size={28} />
+            </div>
+            <h3 className="font-bold text-slate-700 text-base">ไม่พบเมนูอาหารที่คุณค้นหา</h3>
+            <p className="text-xs text-slate-400 mt-1">ลองเปลี่ยนคำค้นหา หรือเลือกหมวดใหม่อีกครั้ง</p>
+            <button 
+              onClick={() => { setSearchQuery(''); setSelectedCategory('recommended'); }}
+              className="mt-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-all"
+            >
+              ดูเมนูแนะนำทั้งหมด
+            </button>
+          </div>
+        )}
+      </main>
+
+      {/* ITEM CUSTOMIZATION MODAL */}
+      {activeModalItem && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+            
+            {/* Modal Header Image */}
+            <div className="relative h-48 w-full bg-slate-100 shrink-0">
+              <img 
+                src={activeModalItem.image} 
+                alt={activeModalItem.name} 
+                className="w-full h-full object-cover"
+              />
+              <button 
+                onClick={() => setActiveModalItem(null)}
+                className="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 backdrop-blur-md transition-all"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Content Scrollable */}
+            <div className="p-5 overflow-y-auto flex-1 space-y-5">
+              <div>
+                <h3 className="font-extrabold text-xl text-slate-900 leading-tight">{activeModalItem.name}</h3>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">{activeModalItem.description}</p>
+                <div className="mt-2 text-lg font-black text-orange-600">฿{activeModalItem.price}</div>
+              </div>
+
+              {/* Spiciness Selection */}
+              {activeModalItem.spicinessOptions.length > 0 && (
+                <div className="border-t border-slate-100 pt-4">
+                  <div className="flex justify-between items-center mb-2.5">
+                    <label className="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+                      <Flame size={16} className="text-orange-500" /> ระดับความเผ็ด
+                    </label>
+                    <span className="text-[11px] text-orange-600 bg-orange-50 font-medium px-2 py-0.5 rounded-full">จำเป็นต้องเลือก</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {activeModalItem.spicinessOptions.map(level => (
+                      <button
+                        key={level}
+                        onClick={() => setSelectedSpiciness(level)}
+                        className={`py-2 px-3 rounded-xl border text-xs font-medium transition-all text-left flex items-center justify-between ${
+                          selectedSpiciness === level
+                            ? 'border-orange-500 bg-orange-50 text-orange-700 font-bold shadow-xs'
+                            : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                        }`}
+                      >
+                        <span>{level}</span>
+                        {selectedSpiciness === level && <CheckCircle2 size={14} className="text-orange-500" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Extra Toppings */}
+              {activeModalItem.toppingOptions.length > 0 && (
+                <div className="border-t border-slate-100 pt-4">
+                  <div className="flex justify-between items-center mb-2.5">
+                    <label className="font-bold text-sm text-slate-800">ท็อปปิ้งเพิ่มเติม (เลือกได้มากกว่า 1)</label>
+                    <span className="text-[11px] text-slate-400">เลือกหรือไม่ก็ได้</span>
+                  </div>
+                  <div className="space-y-2">
+                    {activeModalItem.toppingOptions.map(topping => {
+                      const isSelected = selectedToppings.some(t => t.id === topping.id);
+                      return (
+                        <button
+                          key={topping.id}
+                          onClick={() => handleToppingToggle(topping)}
+                          className={`w-full py-2.5 px-3.5 rounded-xl border text-xs flex items-center justify-between transition-all ${
+                            isSelected
+                              ? 'border-orange-500 bg-orange-50/60 text-slate-900 font-medium'
+                              : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className={`w-4 h-4 rounded flex items-center justify-center border transition-all ${isSelected ? 'bg-orange-500 border-orange-500 text-white' : 'border-slate-300'}`}>
+                              {isSelected && <Plus size={12} />}
+                            </span>
+                            {topping.name}
+                          </span>
+                          <span className="font-semibold text-slate-700">+฿{topping.price}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Special Note */}
+              <div className="border-t border-slate-100 pt-4">
+                <label className="font-bold text-sm text-slate-800 block mb-2">คำขอพิเศษเพิ่มเติม</label>
+                <input 
+                  type="text" 
+                  placeholder="เช่น แยกน้ำซุป, ไม่ใส่ผักชี, ขอช้อนส้อม" 
+                  value={itemNote}
+                  onChange={(e) => setItemNote(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                />
+              </div>
+            </div>
+
+            {/* Modal Bottom Action Bar */}
+            <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-4 shrink-0">
+              {/* Quantity Counter */}
+              <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 shadow-xs">
+                <button 
+                  onClick={() => setModalQuantity(Math.max(1, modalQuantity - 1))}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-slate-100 active:scale-95 transition-all"
+                >
+                  <Minus size={16} />
+                </button>
+                <span className="w-8 text-center font-extrabold text-sm text-slate-800">{modalQuantity}</span>
+                <button 
+                  onClick={() => setModalQuantity(modalQuantity + 1)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-slate-100 active:scale-95 transition-all"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+
+              {/* Add Button */}
+              <button 
+                onClick={handleAddToCart}
+                className="flex-1 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold py-3 px-4 rounded-xl shadow-md shadow-orange-500/20 transition-all flex items-center justify-between"
+              >
+                <span>ใส่ตะกร้า</span>
+                <span>฿{( (activeModalItem.price + selectedToppings.reduce((a,b)=>a+b.price, 0)) * modalQuantity )}</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* FLOATING MOBILE CART BUTTON */}
+      {cart.length > 0 && !isCartOpen && (
+        <div className="fixed bottom-4 left-4 right-4 z-30 md:hidden animate-in slide-in-from-bottom duration-300">
+          <button 
+            onClick={() => setIsCartOpen(true)}
+            className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3.5 px-5 rounded-2xl shadow-xl shadow-orange-500/30 flex items-center justify-between active:scale-98 transition-all"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-lg text-xs font-extrabold">
+                {cart.reduce((a, b) => a + b.quantity, 0)} รายการ
+              </div>
+              <span className="text-sm">ดูรายการในตะกร้า</span>
+            </div>
+            <div className="flex items-center gap-1 font-black text-base">
+              <span>฿{grandTotal}</span>
+              <ChevronRight size={18} />
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* SHOPPING CART DRAWER / SIDE SHEET */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-md h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+            
+            {/* Drawer Header */}
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white sticky top-0 z-10">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="text-orange-500" size={20} />
+                <h2 className="font-extrabold text-slate-900 text-base">ตะกร้าของคุณ</h2>
+                <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold">
+                  {cart.length} เมนู
+                </span>
+              </div>
+              <button 
+                onClick={() => setIsCartOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Drawer Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              
+              {/* Order Type Toggle */}
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-2">ประเภทการจัดส่ง</label>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
+                  <button
+                    onClick={() => setOrderType('delivery')}
+                    className={`py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                      orderType === 'delivery' 
+                        ? 'bg-white text-orange-600 shadow-xs' 
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <MapPin size={14} />
+                    จัดส่งถึงบ้าน (Delivery)
+                  </button>
+                  <button
+                    onClick={() => setOrderType('takeaway')}
+                    className={`py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                      orderType === 'takeaway' 
+                        ? 'bg-white text-orange-600 shadow-xs' 
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <Utensils size={14} />
+                    รับที่ร้าน (Takeaway)
+                  </button>
+                </div>
+              </div>
+
+              {/* Cart Items List */}
+              {cart.length > 0 ? (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">รายการอาหารที่เลือก</h3>
+                  {cart.map(item => (
+                    <div 
+                      key={item.cartItemId}
+                      className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex gap-3 relative"
+                    >
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        className="w-16 h-16 rounded-xl object-cover shrink-0 bg-white"
+                      />
+                      <div className="flex-1 min-w-0 pr-6">
+                        <h4 className="font-bold text-slate-800 text-xs truncate leading-snug">{item.name}</h4>
+                        
+                        {item.spiciness && (
+                          <span className="inline-block text-[10px] text-orange-600 bg-orange-100/70 font-semibold px-1.5 py-0.5 rounded mt-1">
+                            {item.spiciness}
+                          </span>
+                        )}
+
+                        {item.toppings.length > 0 && (
+                          <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+                            +{item.toppings.map(t => t.name).join(', ')}
+                          </p>
+                        )}
+
+                        {item.note && (
+                          <p className="text-[11px] text-amber-700 italic mt-0.5">
+                            "{item.note}"
+                          </p>
+                        )}
+
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="font-extrabold text-sm text-slate-900">
+                            ฿{item.totalUnitPrice * item.quantity}
+                          </span>
+
+                          <div className="flex items-center bg-white border border-slate-200 rounded-lg shadow-2xs">
+                            <button 
+                              onClick={() => updateCartQuantity(item.cartItemId, -1)}
+                              className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100"
+                            >
+                              <Minus size={12} />
+                            </button>
+                            <span className="w-6 text-center text-xs font-bold text-slate-800">{item.quantity}</span>
+                            <button 
+                              onClick={() => updateCartQuantity(item.cartItemId, 1)}
+                              className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100"
+                            >
+                              <Plus size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quick Delete */}
+                      <button 
+                        onClick={() => updateCartQuantity(item.cartItemId, -item.quantity)}
+                        className="absolute top-2 right-2 text-slate-300 hover:text-red-500 p-1"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-slate-400">
+                  <ShoppingBag size={40} className="mx-auto text-slate-300 mb-2" />
+                  <p className="text-sm font-medium">ยังไม่มีรายการอาหารในตะกร้า</p>
+                </div>
+              )}
+
+              {/* Customer Information Form */}
+              {cart.length > 0 && (
+                <div className="space-y-3 border-t border-slate-100 pt-4">
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">ข้อมูลผู้สั่งซื้อ</h3>
+                  
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">ชื่อผู้รับ *</label>
+                      <input 
+                        type="text" 
+                        placeholder="ระบุชื่อของคุณ" 
+                        value={customerInfo.name}
+                        onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">เบอร์โทรศัพท์ติดต่อ *</label>
+                      <input 
+                        type="tel" 
+                        placeholder="08X-XXX-XXXX" 
+                        value={customerInfo.phone}
+                        onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      />
+                    </div>
+
+                    {orderType === 'delivery' && (
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">ที่อยู่จัดส่งโดยละเอียด *</label>
+                        <textarea 
+                          rows={2}
+                          placeholder="บ้านเลขที่, หมู่บ้าน/คอนโด, ชื่อซอย, จุดสังเกต..." 
+                          value={customerInfo.address}
+                          onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Payment Methods */}
+              {cart.length > 0 && (
+                <div className="space-y-3 border-t border-slate-100 pt-4">
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">วิธีการชำระเงิน</h3>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setPaymentMethod('promptpay')}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        paymentMethod === 'promptpay'
+                          ? 'border-orange-500 bg-orange-50/50 text-orange-700 font-bold'
+                          : 'border-slate-200 text-slate-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <QrCode size={16} className="text-orange-500" />
+                        <span>สแกน PromptPay</span>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => setPaymentMethod('cod')}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        paymentMethod === 'cod'
+                          ? 'border-orange-500 bg-orange-50/50 text-orange-700 font-bold'
+                          : 'border-slate-200 text-slate-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <CreditCard size={16} className="text-emerald-600" />
+                        <span>เก็บเงินปลายทาง</span>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* PromptPay QR Code Simulator */}
+                  {paymentMethod === 'promptpay' && (
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center space-y-3">
+                      <div className="bg-white p-3 rounded-xl inline-block border border-slate-200 shadow-xs">
+                        {/* Dummy PromptPay QR */}
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=PROMPTPAY-0812345678-AMOUNT-${grandTotal}`} 
+                          alt="PromptPay QR Code" 
+                          className="w-36 h-36 mx-auto"
+                        />
+                        <span className="text-[10px] text-slate-400 block mt-1">สแกนผ่าน App ธนาคารใดก็ได้</span>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-bold text-slate-800">ชื่อบัญชี: ร้านครัวคุณติ๊ก (พร้อมเพย์)</p>
+                        <p className="text-xs text-slate-500">ยอดชำระสุทธิ: <span className="font-extrabold text-orange-600">฿{grandTotal}</span></p>
+                      </div>
+
+                      {/* Slip Upload Simulator */}
+                      <div className="pt-2">
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">แนบหลักฐานการโอนเงิน (สลิป)</label>
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={handleSlipUpload}
+                          className="text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200 cursor-pointer"
+                        />
+                        {paymentSlip && (
+                          <div className="mt-2 text-xs text-emerald-600 font-semibold flex items-center justify-center gap-1">
+                            <CheckCircle2 size={14} /> แนบสลิปเรียบร้อยแล้ว
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+            </div>
+
+            {/* Drawer Footer & Checkout Button */}
+            {cart.length > 0 && (
+              <div className="p-4 border-t border-slate-200 bg-white space-y-3 sticky bottom-0 z-10 shadow-lg">
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between text-slate-500">
+                    <span>ค่าอาหาร</span>
+                    <span>฿{subtotal}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-500">
+                    <span>ค่าจัดส่ง</span>
+                    <span>{deliveryFee === 0 ? 'ฟรี' : `฿${deliveryFee}`}</span>
+                  </div>
+                  <div className="flex justify-between font-extrabold text-sm text-slate-900 pt-1 border-t border-slate-100">
+                    <span>ยอดรวมทั้งหมด</span>
+                    <span className="text-orange-600 text-base">฿{grandTotal}</span>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={handlePlaceOrder}
+                  className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3.5 rounded-xl shadow-md shadow-orange-500/20 active:scale-98 transition-all flex items-center justify-center gap-2 text-sm"
+                >
+                  <CheckCircle2 size={18} />
+                  <span>ยืนยันการสั่งซื้อ</span>
+                </button>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRMED ORDER & LINE OA CONNECT MODAL */}
+      {confirmedOrder && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl p-6 text-center space-y-5 animate-in zoom-in-95 duration-200">
+            
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600">
+              <CheckCircle2 size={36} />
+            </div>
+
+            <div>
+              <span className="text-xs font-bold text-slate-400 block uppercase tracking-wider">สั่งซื้อสำเร็จ</span>
+              <h2 className="text-xl font-black text-slate-900 mt-0.5">หมายเลขออเดอร์ #{confirmedOrder.id}</h2>
+              <p className="text-xs text-slate-500 mt-1">เวลาโดยประมาณในการจัดส่ง: <span className="font-bold text-slate-800">25 - 35 นาที</span></p>
+            </div>
+
+            {/* LINE OA Quick Action Callout */}
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-left space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="bg-emerald-500 text-white p-2 rounded-xl shrink-0 mt-0.5">
+                  <MessageCircle size={20} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs text-emerald-900">ส่งรายการสั่งซื้อนี้ไปยัง LINE OA ร้านค้า</h4>
+                  <p className="text-[11px] text-emerald-700 mt-0.5 leading-relaxed">
+                    กดปุ่มด้านล่างเพื่อส่งข้อมูลออเดอร์เข้า LINE ร้านค้าโดยอัตโนมัติ เพื่อรับการแจ้งเตือนสถานะแบบ Real-time
+                  </p>
+                </div>
+              </div>
+
+              <button 
+                onClick={sendToLineOA}
+                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
+              >
+                <Send size={16} />
+                <span>ส่งออเดอร์เข้า LINE OA (@delicious_food)</span>
+              </button>
+            </div>
+
+            {/* Order Brief Summary */}
+            <div className="bg-slate-50 rounded-xl p-3 text-left border border-slate-200/80 text-xs space-y-1.5">
+              <div className="flex justify-between text-slate-600 font-semibold">
+                <span>ผู้สั่ง: {confirmedOrder.customer.name}</span>
+                <span>{confirmedOrder.customer.phone}</span>
+              </div>
+              <div className="text-slate-500">
+                รายการอาหาร: {confirmedOrder.items.length} รายการ (รวม ฿{confirmedOrder.grandTotal})
+              </div>
+              <div className="text-slate-500">
+                การชำระเงิน: {confirmedOrder.paymentMethod === 'promptpay' ? 'พร้อมเพย์ QR' : 'เก็บเงินปลายทาง'}
+              </div>
+            </div>
+
+            {/* Close Button */}
+            <button 
+              onClick={() => setConfirmedOrder(null)}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition-all"
+            >
+              กลับสู่หน้าหลัก
+            </button>
+
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
